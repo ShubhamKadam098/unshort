@@ -13,7 +13,8 @@ const wait = (seconds: number) => {
   return new Promise((resolve) => setTimeout(resolve, waitTime))
 }
 
-const loadAllReelRow = () => {
+// This function helps to load all the shorts
+const loadAllShortsRow = () => {
   const reelNextButton = document.querySelector(
     "#right-arrow > ytd-button-renderer"
   ) as HTMLButtonElement
@@ -25,31 +26,30 @@ const loadAllReelRow = () => {
   }
 }
 
+// This function helps to delete a short using the option button
+const deleteShort = async (shortOptionButton: HTMLButtonElement) => {
+  shortOptionButton.click()
+  await wait(1)
+  const deleteOption = document.querySelector(
+    "#contentWrapper > yt-sheet-view-model > yt-contextual-sheet-layout > div.yt-contextual-sheet-layout-wiz__content-container > yt-list-view-model > yt-list-item-view-model:nth-child(5)"
+  ) as HTMLButtonElement
+  deleteOption.click()
+}
 
-const clearRow = async () => {
-  console.log("clearRow")
+const clearShortsRow = async () => {
+  // select all the option buttons for shorts from the row
   const reelOptionButtons = document.querySelectorAll(
     "#items > ytm-shorts-lockup-view-model-v2 > ytm-shorts-lockup-view-model > div > div.shortsLockupViewModelHostOutsideMetadataMenu.shortsLockupViewModelHostShowOverPlayer > button"
   ) as NodeListOf<HTMLButtonElement>
 
-  console.log("reelOptionButtons", reelOptionButtons.length)
-
   for (let i = 0; i < reelOptionButtons.length - 1; i++) {
-    console.log(reelOptionButtons[i])
-    console.log(i)
-    reelOptionButtons[i].click()
-    await wait(1)
-    const deleteOption = document.querySelector(
-      "#contentWrapper > yt-sheet-view-model > yt-contextual-sheet-layout > div.yt-contextual-sheet-layout-wiz__content-container > yt-list-view-model > yt-list-item-view-model:nth-child(5)"
-    ) as HTMLButtonElement
-    deleteOption.click()
-    await wait(2)
+    deleteShort(reelOptionButtons[i])
   }
 }
 
 const handleClearShorts = () => {
-  loadAllReelRow()
-  clearRow()
+  loadAllShortsRow()
+  clearShortsRow()
 }
 
 /**
