@@ -1,10 +1,55 @@
 import cssText from "data-text:~style.css"
 import type { PlasmoCSConfig } from "plasmo"
 
-import { CountButton } from "~features/count-button"
+import { Button } from "~components/ui/button"
 
 export const config: PlasmoCSConfig = {
-  matches: ["<all_urls>"]
+  matches: ["<all_urls>"],
+  world: "MAIN"
+}
+
+const wait = (seconds: number) => {
+  const waitTime = seconds * 1000
+  return new Promise((resolve) => setTimeout(resolve, waitTime))
+}
+
+const loadAllReelRow = () => {
+  const reelNextButton = document.querySelector(
+    "#right-arrow > ytd-button-renderer"
+  ) as HTMLButtonElement
+  if (reelNextButton) {
+    console.log("Next button existed and clicked")
+    reelNextButton.click()
+  } else {
+    console.log("Next button does not existed")
+  }
+}
+
+
+const clearRow = async () => {
+  console.log("clearRow")
+  const reelOptionButtons = document.querySelectorAll(
+    "#items > ytm-shorts-lockup-view-model-v2 > ytm-shorts-lockup-view-model > div > div.shortsLockupViewModelHostOutsideMetadataMenu.shortsLockupViewModelHostShowOverPlayer > button"
+  ) as NodeListOf<HTMLButtonElement>
+
+  console.log("reelOptionButtons", reelOptionButtons.length)
+
+  for (let i = 0; i < reelOptionButtons.length - 1; i++) {
+    console.log(reelOptionButtons[i])
+    console.log(i)
+    reelOptionButtons[i].click()
+    await wait(1)
+    const deleteOption = document.querySelector(
+      "#contentWrapper > yt-sheet-view-model > yt-contextual-sheet-layout > div.yt-contextual-sheet-layout-wiz__content-container > yt-list-view-model > yt-list-item-view-model:nth-child(5)"
+    ) as HTMLButtonElement
+    deleteOption.click()
+    await wait(2)
+  }
+}
+
+const handleClearShorts = () => {
+  loadAllReelRow()
+  clearRow()
 }
 
 /**
@@ -39,9 +84,11 @@ export const getStyle = (): HTMLStyleElement => {
 
 const PlasmoOverlay = () => {
   return (
-    <div className="plasmo-z-50 plasmo-flex plasmo-fixed plasmo-top-32 plasmo-right-8">
-      <CountButton />
-    </div>
+    <Button
+      className="z-50 flex fixed top-32 right-8 "
+      onClick={handleClearShorts}>
+      Unshort
+    </Button>
   )
 }
 
