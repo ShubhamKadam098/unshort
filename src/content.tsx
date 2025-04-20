@@ -64,16 +64,40 @@ const PlasmoOverlay = () => {
     setIsProcessing(false)
   }
 
+  function isElementVisible(element) {
+    const style = window.getComputedStyle(element)
+    const opacity = parseFloat(style.opacity) // Convert to a number
+
+    return opacity > 0 // Returns true if opacity is greater than 0
+  }
+
   // This function helps to load all the shorts
-  const loadAllShortsRow = (shortList: Element) => {
-    const reelNextButton = shortList.querySelector(
-      "#right-arrow > ytd-button-renderer"
-    ) as HTMLButtonElement
-    if (reelNextButton) {
-      console.log("Next button existed for", shortList)
-      reelNextButton.click()
-    } else {
-      console.log("Next button does not existed for " + shortList)
+  const loadAllShortsRow = async (shortList: Element) => {
+    let nextButtonClicks = 0
+    while (isProcessingRef.current) {
+      const reelNextButton = shortList.querySelector(
+        "#right-arrow > ytd-button-renderer"
+      ) as HTMLButtonElement
+      if (isElementVisible(reelNextButton)) {
+        console.log(
+          "Next button exist " +
+            nextButtonClicks +
+            " clicks which is " +
+            reelNextButton
+        )
+        nextButtonClicks++
+        reelNextButton.click()
+        await wait(1)
+      } else {
+        console.log(
+          "Next button does not existed for " +
+            shortList +
+            " after " +
+            nextButtonClicks +
+            " clicks"
+        )
+        break
+      }
     }
   }
 
@@ -128,7 +152,7 @@ const PlasmoOverlay = () => {
         const currentRow = proccessedRows
         console.log("Current row number", currentRow)
         shortsLists[currentRow].scrollIntoView({ behavior: "smooth" })
-        loadAllShortsRow(shortsLists[currentRow])
+        await loadAllShortsRow(shortsLists[currentRow])
         await clearShortsRow(shortsLists[currentRow])
         proccessedRows++
       } else {
@@ -154,8 +178,8 @@ const PlasmoOverlay = () => {
   }
 
   useEffect(() => {
-    console.log("isProcessing", isProcessing)
-  }, [isProcessing])
+    console.log("isProcessingRef", isProcessingRef)
+  }, [isProcessingRef])
 
   return (
     <div className="z-50 flex fixed top-32 right-8">
