@@ -13,43 +13,88 @@ const wait = (seconds: number) => {
   return new Promise((resolve) => setTimeout(resolve, waitTime))
 }
 
+const logCurrentTime = (prfix?: string) => {
+  // log current time
+  const currentTime = new Date().getTime()
+  console.log(prfix ? prfix : "currentTime", currentTime)
+}
+
 // This function helps to load all the shorts
-const loadAllShortsRow = () => {
-  const reelNextButton = document.querySelector(
+const loadAllShortsRow = (shortList: Element) => {
+  const reelNextButton = shortList.querySelector(
     "#right-arrow > ytd-button-renderer"
   ) as HTMLButtonElement
   if (reelNextButton) {
-    console.log("Next button existed and clicked")
+    console.log("Next button existed for", shortList)
     reelNextButton.click()
   } else {
-    console.log("Next button does not existed")
+    console.log("Next button does not existed for " + shortList)
   }
 }
 
 // This function helps to delete a short using the option button
 const deleteShort = async (shortOptionButton: HTMLButtonElement) => {
+  console.log("Delete short shortOptionButton", shortOptionButton)
   shortOptionButton.click()
+
   await wait(1)
   const deleteOption = document.querySelector(
     "#contentWrapper > yt-sheet-view-model > yt-contextual-sheet-layout > div.yt-contextual-sheet-layout-wiz__content-container > yt-list-view-model > yt-list-item-view-model:nth-child(5)"
   ) as HTMLButtonElement
-  deleteOption.click()
-}
-
-const clearShortsRow = async () => {
-  // select all the option buttons for shorts from the row
-  const reelOptionButtons = document.querySelectorAll(
-    "#items > ytm-shorts-lockup-view-model-v2 > ytm-shorts-lockup-view-model > div > div.shortsLockupViewModelHostOutsideMetadataMenu.shortsLockupViewModelHostShowOverPlayer > button"
-  ) as NodeListOf<HTMLButtonElement>
-
-  for (let i = 0; i < reelOptionButtons.length - 1; i++) {
-    deleteShort(reelOptionButtons[i])
+  if (!deleteOption) {
+    console.log("deleteOption not found")
+    return
+  } else {
+    console.log("deleteOption found", deleteOption)
+    deleteOption.click()
   }
 }
 
-const handleClearShorts = () => {
-  loadAllShortsRow()
-  clearShortsRow()
+const clearShortsRow = async (shortList: Element) => {
+  // select all the option buttons for shorts from the row
+  const shortOptionButtons = shortList.querySelectorAll<HTMLButtonElement>(
+    "div.shortsLockupViewModelHostOutsideMetadataMenu.shortsLockupViewModelHostShowOverPlayer > button"
+  )
+  console.log("shortOptionButtons", shortOptionButtons)
+
+  for (let i = 0; i < shortOptionButtons.length - 1; i++) {
+    await deleteShort(shortOptionButtons[i])
+  }
+}
+
+const handleClearShorts = async () => {
+  let proccessedRows = 0
+  let scrolls = 0
+  while (true) {
+    if (scrolls > 10) {
+      console.log("Scrolled 10 times, stopping")
+      break
+    }
+    const shortsLists = document.querySelectorAll("ytd-reel-shelf-renderer")
+    console.log("shortList", shortsLists)
+    if (proccessedRows < shortsLists.length) {
+      console.log("resetting scrolls")
+      scrolls = 0
+      const currentRow = proccessedRows
+      console.log("Current row number", currentRow)
+      shortsLists[currentRow].scrollIntoView({ behavior: "smooth" })
+      loadAllShortsRow(shortsLists[currentRow])
+      await clearShortsRow(shortsLists[currentRow])
+      proccessedRows++
+    } else {
+      scrolls++
+      console.log("Scrolling to bottom")
+      window.scrollTo({
+        top: document.documentElement.scrollHeight,
+        behavior: "smooth"
+      })
+      // log current time
+      logCurrentTime()
+      await wait(5)
+      // log current time again
+      logCurrentTime()
+    }
+  }
 }
 
 /**
