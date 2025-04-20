@@ -184,7 +184,9 @@ const PlasmoOverlay = () => {
   return (
     <div className="z-50 flex fixed top-32 right-8">
       {isProcessing ? (
-        <Button onClick={stopProcessing}>Stop</Button>
+        <Button onClick={stopProcessing} variant="destructive">
+          Stop
+        </Button>
       ) : (
         <Button onClick={handleButtonClick}>Unshort</Button>
       )}
